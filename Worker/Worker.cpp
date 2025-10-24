@@ -1,26 +1,23 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
-#include <cmath> //математические функции
+#include <cmath>
 #include <vector>
 #include <windows.h>
 
 using namespace std;
 
-// Функция для установки русской локализации
 void setRussianLocale() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
     setlocale(LC_ALL, "Russian");
 }
 
-// Проверка числа на простоту (оптимизированный метод)
 bool is_prime(long long n) {
     if (n < 2) return false;
     if (n == 2 || n == 3) return true;
     if (n % 2 == 0 || n % 3 == 0) return false;
 
-    // Проверяем делители до корня из n
     long long limit = static_cast<long long>(sqrt(n)) + 1;
     for (long long i = 5; i <= limit; i += 6) {
         if (n % i == 0 || n % (i + 2) == 0) {
@@ -43,10 +40,8 @@ int main(int argc, char* argv[]) {
     int worker_id = stoi(argv[3]);
 
     string filename = "result_" + to_string(worker_id) + ".txt";
-    //открытие файла для записи
     ofstream outfile(filename, ios::app);
 
-    // Устанавливаем русскую локаль для файла
     outfile.imbue(locale("Russian"));
 
     cout << "Работник " << worker_id << " проверяет диапазон: " << start << " - " << end << endl;
@@ -54,21 +49,18 @@ int main(int argc, char* argv[]) {
     long long count = 0; //счетчик пар близнецов
     vector<pair<long long, long long>> twins;
 
-    // если пара чисел простые, то добавляем в вектор
     for (long long n = start; n <= end; n++) {
         if (is_prime(n) && is_prime(n + 2)) {
             twins.push_back({ n, n + 2 });
             count++;
         }
 
-        // Прогресс каждые 10000 чисел
         if ((n - start) % 10000 == 0 && n > start) {
             cout << "Работник " << worker_id << " прогресс: "
                 << (n - start) << "/" << (end - start) << endl;
         }
     }
 
-    // Записываем результаты в файл
     outfile << "=== Работник " << worker_id << " диапазон " << start << "-" << end << " ===" << endl;
     outfile << "Найдено пар близнецов: " << count << endl;
 
