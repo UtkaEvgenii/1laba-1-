@@ -40,6 +40,7 @@ int main() {
     vector<uintptr_t> processes;
 
     for (int worker_id = 0; worker_id < NUM_WORKERS; worker_id++) {
+        //рассчитываем диапазон для каждого процесса
         long long worker_start = START + (worker_id * CHUNK_SIZE);
         long long worker_end = START + ((worker_id + 1) * CHUNK_SIZE) - 1;
 
