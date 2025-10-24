@@ -1,10 +1,10 @@
 ﻿#include <iostream> 
-#include <fstream> //работа с файлами
+#include <fstream>
 #include <string> 
 #include <vector> 
-#include <cstdlib> //system
-#include <windows.h> //Windows API
-#include <process.h> //для работы с процессами spawnl
+#include <cstdlib>
+#include <windows.h> 
+#include <process.h> 
 
 using namespace std;
 
@@ -13,9 +13,9 @@ using namespace std;
 
 const long long START = 1LL;
 const long long END = 100000000LL;
-const int NUM_WORKERS = 8;              // Используем 8 worker'ов
-const long long TOTAL_NUMBERS = END - START; //
-const long long CHUNK_SIZE = TOTAL_NUMBERS / NUM_WORKERS;  // Равные части
+const int NUM_WORKERS = 8;              
+const long long TOTAL_NUMBERS = END - START; 
+const long long CHUNK_SIZE = TOTAL_NUMBERS / NUM_WORKERS; 
 
 
 void setRussianLocale() {
@@ -33,31 +33,25 @@ int main() {
     cout << "Размер блока на worker: " << CHUNK_SIZE << " чисел" << endl;
     cout << "Общее количество чисел: " << TOTAL_NUMBERS << endl;
 
-    // Удаляем старые результаты, 2>nul - пустота
     system("del result_*.txt 2>nul");
 
     cout << "\nЗапуск 8 рабочих процессов..." << endl;
 
-    // Запускаем ровно 8 рабочих процессов ПАРАЛЛЕЛЬНО (uintptr_t - хранение дескрипторов процессов
     vector<uintptr_t> processes;
 
     for (int worker_id = 0; worker_id < NUM_WORKERS; worker_id++) {
-        // Распределяем диапазон равномерно между 8 worker'ами
         long long worker_start = START + (worker_id * CHUNK_SIZE);
         long long worker_end = START + ((worker_id + 1) * CHUNK_SIZE) - 1;
 
-        // Последний worker добирает до конца диапазона
         if (worker_id == NUM_WORKERS - 1) {
             worker_end = END;
         }
 
-        //преобразование числа в строки для передачи в командной строке
         string start_str = to_string(worker_start);
         string end_str = to_string(worker_end);
         string worker_str = to_string(worker_id);
 
-        // Запускаем процесс параллельно
-        //Флаг _P_NOWAIT - не ждать завершение
+        
 
         uintptr_t process = _spawnl(_P_NOWAIT, "worker.exe", "worker.exe",
             start_str.c_str(), end_str.c_str(), worker_str.c_str(), NULL);
@@ -76,26 +70,21 @@ int main() {
 
     cout << "\nУспешно запущено " << processes.size() << " процессов. Ожидание завершения..." << endl;
 
-    // Ждем завершения всех процессов
     for (uintptr_t process : processes) {
         _cwait(NULL, process, WAIT_CHILD);
     }
 
     cout << "\nВсе процессы завершены! Сбор результатов..." << endl;
 
-    // Собираем результаты
     cout << "\n=== РЕЗУЛЬТАТЫ ===" << endl;
     system("type result_*.txt 2>nul");
 
-    // Объединяем все результаты
     system("copy result_*.txt final_results.txt 2>nul");
 
-    // Показываем статистику по файлам
     cout << "\n=== СТАТИСТИКА ===" << endl;
     cout << "Создано файлов: result_0.txt до result_7.txt" << endl;
     cout << "Общие результаты сохранены в final_results.txt" << endl;
 
-    // Показываем размеры файлов
     system("dir result_*.txt | find \"result_\"");
 
     return 0;
